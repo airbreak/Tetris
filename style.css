@@ -11,10 +11,11 @@ canvas {
     border-radius:0.8em;
 }
 #wrapper {
-    position:relative;
-    width:62.5em;
-    height:31.25em;
-    
+    position:absolute;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
 }
 
 #timer {
@@ -31,6 +32,7 @@ canvas {
     left:1em;
 }
 #board {
-    top:5em;
-    left:20em;
+    left:33%;
+    width:33%;
+    height:100%;
 }

@@ -1,5 +1,8 @@
 ﻿(function () {
 
+    /*
+    *时间计时器
+    */
     var Timer = function () {
         this.width = 200;
         this.height = 100;
@@ -21,24 +24,18 @@
         /*时间格式化*/
         timeFormat: function () {
             var ot = this.originTime,
-                fn = this.dealWithNum;
-            if (ot < 60) {
-                return '00:00:' + fn(ot);
-            } else if (ot < 60 * 60) {
-                var m = Math.floor(ot / 60),
-                    s = ot % 60;
-                return '00:' + fn(m) + ':' + fn(s);
-            }
-            else {
-                var h = Math.floor(ot / (60 * 60)),
-                    m = Math.floor((ot - (h * 60 * 60)) / 60),
-                    s = (ot - (h * 60 * 60)) % 60;
-                console.log(ot);
-                console.log(h);
-                 return fn(h) +':'+ fn(m) + ':' + fn(s);
-            }
+                fn = this.dealWithNum,
+                h = Math.floor(ot / 3600),
+                m = Math.floor((ot - h * 3600) / 60),
+                s = ot - (h * 3600) - m * 60;
+            return fn(h) + ':' + fn(m) + ':' + fn(s);
         },
 
+        /*
+        *处理时间格式，小于10 前面加0
+        *para：
+        * num -{int}时间信息
+        */
         dealWithNum: function (num) {
             if (num < 10) {
                 return '0' + num;
@@ -53,6 +50,40 @@
 
     };
 
+    /*
+    *砖块对象
+    */
+    var Block = function () {
+        this.w = $(document).width() * 0.33;
+        this,h = $(document).height();
+        this.canvas = new Canvas('block', this.w, this.h);
+        this.lineNumH = 12;
+    }
+    Block.prototype = {
+        init: function () { },
+
+        /*
+        *绘制水平线，总条数为12根
+        */
+        drawBgLineH: function () {
+
+        },
+
+        /*
+        *绘制竖直线，总条数为n根
+        */
+        drawBgLineH: function () {
+
+        },
+
+        /*
+        *正常下落
+        */
+        downForNarmal: function () { },
+
+
+
+    };
 
     /*
     *canvas 类对象
