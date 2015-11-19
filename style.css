@@ -1,0 +1,36 @@
+﻿body {
+    font-size:100%;
+}
+html {
+    background:url(images/bg.jpg) 0 0 fixed no-repeat;
+    background-size:cover;
+}
+canvas {
+    border:0.16em solid #808080;
+    position:absolute;
+    border-radius:0.8em;
+}
+#wrapper {
+    position:relative;
+    width:62.5em;
+    height:31.25em;
+    
+}
+
+#timer {
+    top:1em;
+    left:1em;
+}
+#score {
+    top:10em;
+    left:1em;
+}
+
+#next {
+    bottom:1em;
+    left:1em;
+}
+#board {
+    top:5em;
+    left:20em;
+}
