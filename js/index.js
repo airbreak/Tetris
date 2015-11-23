@@ -54,25 +54,48 @@
     *砖块对象
     */
     var Block = function () {
-        this.w = $(document).width() * 0.33;
-        this,h = $(document).height();
-        this.canvas = new Canvas('block', this.w, this.h);
-        this.lineNumH = 12;
+        this.cols = 13;
+        this.rows = 16;
+        this.bw = 32;
+        this.w = this.cols * 32;
+        this.h = this.rows * 32;
+        this.canvas = new Canvas('board', this.w, this.h);
+        this.ctx = this.canvas.ctx;
+        this.init();
     }
     Block.prototype = {
-        init: function () { },
-
-        /*
-        *绘制水平线，总条数为12根
-        */
-        drawBgLineH: function () {
-
+        init: function () {
+            this.drawBgLine();
         },
 
         /*
-        *绘制竖直线，总条数为n根
+        *绘制水平线，总条数为13根
         */
-        drawBgLineH: function () {
+        drawBgLine: function () {
+            this.ctx.strokeStyle = 'rgba(40,40,40,.8)';
+            this.ctx.lineWidth = '1px';
+
+            //绘制竖直线，总条数为13根
+            var len = this.cols;
+            for (var i = 0; i < len; i++) {
+                this.ctx.moveTo(this.bw * i, 0);
+                this.ctx.lineTo(this.bw * i, this.h);
+                this.ctx.stroke();
+            }
+            //绘制横线，总条数为16根
+            len = this.rows;
+            for (var i = 0; i < len; i++) {
+                this.ctx.moveTo(0,this.bw*i);
+                this.ctx.lineTo(this.w,this.bw*i);
+                this.ctx.stroke();
+            }
+        },
+
+        /*
+        *绘制砖块
+        *从基本的图片中读取图片，进行编排
+        */
+        drawBlock: function () {
 
         },
 
@@ -86,6 +109,26 @@
     };
 
     /*
+    *下一个砖块对象
+    */
+    var NextShape = function () {
+        this.width = 200;
+        this.height = 200;
+        this.canvas = new Canvas('next', this.width, this.height);
+        this.canvas.drawHead('rgb(0,240,255)', 'Next');
+    };
+
+    NextShape.prototype = {
+        init: function () {
+
+        },
+        drawShape: function () {
+
+        },
+
+    };
+
+    /*
     *canvas 类对象
     */
     var Canvas = function (id, width, height) {
@@ -93,6 +136,7 @@
         this.ctx = this.el.getContext('2d');
         this.width = width;
         this.height = height;
+        this.setSize();
     };
     Canvas.prototype = {
         setSize: function () {
@@ -100,7 +144,12 @@
             this.el.width = this.width;
         },
 
-        /*绘制画布的头部*/
+        /*
+        *绘制画布的头部
+        *para:
+        *color-{string} 颜色字符串，rgba形式，带透明度
+        *text - {string} 标题 
+        */
         drawHead: function (color, text) {
             this.ctx.fillStyle = color;
             this.ctx.fillRect(0, 0, this.width, 50);
@@ -110,7 +159,11 @@
             this.ctx.fillText(text, this.width / 2, 34);
         },
 
-        /*绘制画布的头部*/
+        /*绘制画布的头部
+         *para:
+        *color-{string} 颜色字符串，rgba形式，带透明度
+        *text - {string} 标题
+        */
         drawText: function (text) {
             this.clearRect(0, 50);
             this.ctx.font = '25px Arial';
@@ -119,7 +172,14 @@
             this.ctx.fillText(text, this.width / 2, 84);
         },
 
-        /*清除画布*/
+        /*
+        *清除画布
+        *para:
+        *fx - {int} 清空区域的起点x坐标
+        *fy - {int} 清空区域的起点y坐标
+        *tx - {int} 清空区域的终点x坐标
+        *ty - {int} 清空区域的终点y坐标
+        */
         clearRect: function (fx, fy, tx, ty) {
             fx = fx || 0;
             fy = fy || 0;
@@ -130,5 +190,7 @@
     }
 
     new Timer();
+    new Block();
+    new NextShape();
 
 })();
