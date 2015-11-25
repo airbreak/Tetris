@@ -3,7 +3,7 @@
     /*
     *时间计时器
     */
-    var Timer = function () {
+    function Timer() {
         this.width = 200;
         this.height = 100;
         this.canvas = new Canvas('timer', this.width, this.height);
@@ -53,7 +53,7 @@
     /*
     *砖块对象
     */
-    var Block = function () {
+    function Board() {
         this.cols = 13;
         this.rows = 16;
         this.bw = 32;
@@ -63,7 +63,7 @@
         this.ctx = this.canvas.ctx;
         this.init();
     }
-    Block.prototype = {
+    Board.prototype = {
         init: function () {
             this.drawBgLine();
         },
@@ -85,8 +85,8 @@
             //绘制横线，总条数为16根
             len = this.rows;
             for (var i = 0; i < len; i++) {
-                this.ctx.moveTo(0,this.bw*i);
-                this.ctx.lineTo(this.w,this.bw*i);
+                this.ctx.moveTo(0, this.bw * i);
+                this.ctx.lineTo(this.w, this.bw * i);
                 this.ctx.stroke();
             }
         },
@@ -108,19 +108,46 @@
 
     };
 
+
+    /*单个砖块*/
+    function Block() {
+        this.spriteImg = new SpriteLoader();
+        this.img = this.spriteImg.image;
+        this.size = this.spriteImg.imageSize;
+        this.total = this.spriteImg.total;
+    }
+
+    Block.prototype = {
+        random: function () {
+            return Math.floor(Math.random() * this.total) + 1;
+        },
+        draw: function (ctx, x, y, blockType) {
+            var type = blockType || this.random();
+            var s = this.size;
+            ctx.drawImage(this.img,
+                s*(type-1), 0, //开始位置
+                s, s,  //高度和宽度
+                s*x, s*y, //放置的位置
+                s,s //要使用的大小
+                );
+        }
+    };
+
     /*
     *下一个砖块对象
     */
-    var NextShape = function () {
+    function NextShape() {
         this.width = 200;
         this.height = 200;
         this.canvas = new Canvas('next', this.width, this.height);
-        this.canvas.drawHead('rgb(0,240,255)', 'Next');
+        this.bloclk = new Block();
+        this.init();
     };
 
     NextShape.prototype = {
         init: function () {
-
+            this.canvas.drawHead('rgb(0,240,255)', 'Next');
+            this.bloclk.draw(this.canvas.ctx,20,20,1);
         },
         drawShape: function () {
 
@@ -128,10 +155,19 @@
 
     };
 
+    /*图片对象，读取砖块基本图片*/
+    function SpriteLoader() {
+        var path = '/images/block.png';
+        this.image = new Image();
+        this.image.src = path;
+        this.imageSize = 32;
+        this.total = 7;
+    }
+
     /*
     *canvas 类对象
     */
-    var Canvas = function (id, width, height) {
+    function Canvas(id, width, height) {
         this.el = document.getElementById(id);
         this.ctx = this.el.getContext('2d');
         this.width = width;
@@ -190,7 +226,7 @@
     }
 
     new Timer();
-    new Block();
+    new Board();
     new NextShape();
 
 })();
