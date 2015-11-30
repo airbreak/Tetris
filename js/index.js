@@ -1,4 +1,8 @@
-﻿(function () {
+﻿var MyTetris = (function () {
+    var cols = 13,
+      rows = 16,
+      bw = 32;
+
 
     /*
     *时间计时器
@@ -60,12 +64,15 @@
         this.w = this.cols * 32;
         this.h = this.rows * 32;
         this.canvas = new Canvas('board', this.w, this.h);
+        this.shape = new Shape();
+        this.nextShape = new Shape();
         this.ctx = this.canvas.ctx;
-        this.init();
-    }
+    };
     Board.prototype = {
         init: function () {
             this.drawBgLine();
+            this.nextShape.init().draw(this.ctx);
+            window.MyTetris.nextShape.drawShape(this.nextShape);  //下一个预览框
         },
 
         /*
@@ -121,14 +128,23 @@
         random: function () {
             return Math.floor(Math.random() * this.total) + 1;
         },
+
+        /*
+        *绘制图形
+        *para：
+        *ctx -{javscript object} 画布 context
+        *x - {float} 在第几个格放置图片 x方向
+        *y - {float} 在第几个格放置图片 y方面
+        *blockType - {int} 砖块的类型 ，1-7
+        */
         draw: function (ctx, x, y, blockType) {
             var type = blockType || this.random();
             var s = this.size;
             ctx.drawImage(this.img,
-                s*(type-1), 0, //开始位置
+                s * (type - 1), 0, //开始位置
                 s, s,  //高度和宽度
-                s*x, s*y, //放置的位置
-                s,s //要使用的大小
+                s * x, s * y, //放置的位置
+                s, s //要使用的大小
                 );
         }
     };
@@ -140,6 +156,7 @@
         this.width = 200;
         this.height = 200;
         this.canvas = new Canvas('next', this.width, this.height);
+        this.ctx = this.canvas.ctx;
         this.bloclk = new Block();
         this.init();
     };
@@ -147,17 +164,21 @@
     NextShape.prototype = {
         init: function () {
             this.canvas.drawHead('rgb(0,240,255)', 'Next');
-            this.bloclk.draw(this.canvas.ctx,20,20,1);
         },
-        drawShape: function () {
 
+        //绘制砖块
+        drawShape: function (nextShape) {
+            this.canvas.clearRect(0, 50);
+            nextShape.currentX = 2;
+            nextShape.curretnY = 2;
+            nextShape.draw(this.ctx);
         },
 
     };
 
     /*图片对象，读取砖块基本图片*/
     function SpriteLoader() {
-        var path = '/images/block.png';
+        var path = 'images/blocks.png';
         this.image = new Image();
         this.image.src = path;
         this.imageSize = 32;
@@ -174,9 +195,25 @@
         this.blockType;
         this.currentX = 0;
         this.currentY = 0;
-        this.layouts = [
+        this.init();
+    }
+
+    Shape.prototype = {
+
+        init: function () {
+            this.getBasicLayout();
+            this.random();
+            this.setDeafaultPos();
+            return this;
+        },
+
+        /*
+        *定义七种基本的形状
+        */
+        getBasicLayout: function () {
+            this.layouts = [
             [
-                [1,1,1,1]  //传说中最牛逼的  长条
+                [1, 1, 1, 1]  //传说中最牛逼的  长条
             ],
             [
                 [1, 1],     //正方形
@@ -185,7 +222,7 @@
             [
                 [1, 0, 0],
                 [1, 1, 1]  //正 L 形
-             ],
+            ],
             [
                 [0, 0, 1],
                 [1, 1, 1]  //反 L 形
@@ -203,8 +240,53 @@
                 [0, 1, 0],
                 [1, 1, 1]  // 山 形
             ]
-        ];
-    }
+            ];
+        },
+
+        /*
+        *设置基本的原始位置
+        *包括x是中间，y是0的位置
+        */
+        setDeafaultPos: function () {
+            this.curretnX = this.currentX + Math.floor((cols - this.layout[0].length) / 2);
+            this.curretnY = 0;
+        },
+
+        /*
+        *得到一个随机的形状
+        *根据随机生成的 形状 数组，将其中为1 的赋值
+        */
+        random: function () {
+            var index = Math.floor(Math.random() * this.layouts.length),
+                 layout = this.layouts[index];
+            this.blockType = this.block.random();
+            for (var y = 0; y < layout.lenght; y++) {
+                for (var x = 0; x < layout[0].lenght; x++) {
+                    //如果相应的数字为1 ，则赋值上 颜色块对应的数值，方便后面的图片加载
+                    if (layout[y][x]) {
+                        layout[y][x] = this.blockType;
+                    }
+                }
+            }
+            this.layout = layout;
+
+        },
+
+        /*
+        *绘制相应的砖块
+        *para :
+        *ctx - {object} 画布2d对象
+        */
+        draw: function (ctx) {
+            for (var y = 0; y < this.layout.length; y++) {
+                for (var x = 0; x < this.layout[0].length; x++) {
+                    if (this.layout[y][x]) {
+                        this.block.draw(ctx, x + this.currentX, y + this.currentY, this.blockType);
+                    }
+                }
+            }
+        },
+    };
 
 
     /*
@@ -266,10 +348,25 @@
             ty = ty || this.height;
             this.ctx.clearRect(fx, fy, tx, ty);
         }
+    };
+
+    function MyTetris() {
+        this.timer = new Timer();
+        this.nextShape = new NextShape();
+        this.board = new Board();
+        this.init();
     }
-
-    new Timer();
-    new Board();
-    new NextShape();
-
+    MyTetris.prototype = {
+        init: function () {
+            this.newGame();
+        },
+        newGame: function () {
+            var that = this;
+            var sprite = this.board.shape.block.spriteImg.image;
+            sprite.onload = function () {
+                that.board.init();
+            };
+        },
+    };
+    return new MyTetris();
 })();
