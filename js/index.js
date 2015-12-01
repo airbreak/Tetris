@@ -58,11 +58,11 @@
     *砖块对象
     */
     function Board() {
-        this.cols = 13;
-        this.rows = 16;
-        this.bw = 32;
-        this.w = this.cols * 32;
-        this.h = this.rows * 32;
+        this.cols = cols;
+        this.rows = rows;
+        this.bw = bw;
+        this.w = this.cols * bw;
+        this.h = this.rows * bw;
         this.canvas = new Canvas('board', this.w, this.h);
         this.shape = new Shape();
         this.nextShape = new Shape();
@@ -71,8 +71,19 @@
     Board.prototype = {
         init: function () {
             this.drawBgLine();
-            this.nextShape.init().draw(this.ctx);
-            window.MyTetris.nextShape.drawShape(this.nextShape);  //下一个预览框
+            this.drawRandomShapeInBoard();
+            this.drawRandomShapeInNext();
+        },
+
+        /*在主要的游戏面板上绘制一个随机的形状*/
+        drawRandomShapeInBoard: function () {
+            this.shape.init().draw(this.ctx);
+        },
+
+        /*在下一个预览框板上绘制一个随机的形状*/
+        drawRandomShapeInNext: function () {
+            this.nextShape.init();  //得到全新的形状 和上一个没有关系 
+            window.MyTetris.nextShape.draw(this.nextShape);
         },
 
         /*
@@ -154,10 +165,9 @@
     */
     function NextShape() {
         this.width = 200;
-        this.height = 200;
+        this.height = 150;
         this.canvas = new Canvas('next', this.width, this.height);
         this.ctx = this.canvas.ctx;
-        this.bloclk = new Block();
         this.init();
     };
 
@@ -167,10 +177,10 @@
         },
 
         //绘制砖块
-        drawShape: function (nextShape) {
+        draw: function (nextShape) {
             this.canvas.clearRect(0, 50);
             nextShape.currentX = 2;
-            nextShape.curretnY = 2;
+            nextShape.currentY = 2;
             nextShape.draw(this.ctx);
         },
 
@@ -248,7 +258,7 @@
         *包括x是中间，y是0的位置
         */
         setDeafaultPos: function () {
-            this.curretnX = this.currentX + Math.floor((cols - this.layout[0].length) / 2);
+            this.currentX = Math.floor((cols - this.layout[0].length) / 2);
             this.curretnY = 0;
         },
 
