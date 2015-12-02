@@ -126,12 +126,12 @@
         },
 
         /*
-        *自动下落下落计时器
+        *自动下落下落计时器  将砖块的y坐标修改
         */
         timeTick:function(){
             this.shape.currentY++;
             this.refresh();
-            this.shape.draw(this.ctx);
+            this.shape.draw(this.ctx);   //y坐标修改
         },
 
         /*
@@ -155,14 +155,6 @@
                 }
             }
         },
-
-        /*
-        *正常下落
-        */
-        downForNarmal: function () { },
-
-
-
     };
 
 
