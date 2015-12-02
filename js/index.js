@@ -74,12 +74,12 @@
     Board.prototype = {
         init: function () {
             this.drawBgLine();
-            this.drawRandomShapeInBoard();
-            this.drawRandomShapeInNext();
+            this.drawRandomShapeInBoard();  
+            this.drawRandomShapeInNext(this.nextShape.init());//得到全新的形状 和上一个没有关系 
             this.initGrid();
         },
 
-        /*初始化整个游戏主空格*/
+        /*初始化整个游戏主风格对应的虚拟数据*/
         initGrid:function(){
             this.list=[];
             for(var y=0;y<rows;y++){
@@ -96,9 +96,8 @@
         },
 
         /*在下一个预览框板上绘制一个随机的形状*/
-        drawRandomShapeInNext: function () {
-            this.nextShape.init();  //得到全新的形状 和上一个没有关系 
-            window.MyTetris.nextShape.draw(this.nextShape);
+        drawRandomShapeInNext: function (shape) {
+            window.MyTetris.nextShape.draw(shape);
         },
 
         /*
@@ -127,10 +126,35 @@
 
         /*
         *自动下落下落计时器  将砖块的y坐标修改
+        *如果是正常情况下，（没有到达边界），正常下落
+        *否则落到相应的位置放好。
         */
-        timeTick:function(){
-            this.shape.currentY++;
-            this.refresh();
+        timeTick: function () {
+            //正常下落
+            if (this.validMove(0, 1)) {
+                this.shape.currentY++;
+            }
+
+            //位置放好
+            else {
+                this.addBlocksToBoard();  //更改list对应的值，方便绘制“死”砖块
+
+                //消去 填满的行 并相应的加分
+               
+                //得到一个全新的砖块
+                var tempShape = this.shape.init();
+
+                //游戏框中  使用上一个预览框中的形状
+                this.shape = this.nextShape;
+
+                //重新使新的开始坐标
+                this.shape.setDeafaultPos();
+
+                //重新生成一个新的砖块 预览框中
+                this.drawRandomShapeInNext(tempShape);
+
+            }
+            this.refresh(); //刷新游戏主面板
             this.shape.draw(this.ctx);   //y坐标修改
         },
 
@@ -144,7 +168,7 @@
         },
 
         /*
-        *绘制砖块
+        *绘制砖块 已经“死”的砖块
         */
         drawBlocks: function () {
             for(var y=0;y<this.rows;y++){
@@ -155,6 +179,54 @@
                 }
             }
         },
+
+        /*
+        *判断砖块是否到底部
+        *判断区域的几个语句：
+        *1.通过y 方向确定是否到达底部
+        *2.
+        */
+        validMove: function (x,y) {
+            var shape = this.shape,
+                ox = shape.currentX + x,
+                oy = shape.currentY + y,
+                len1 = shape.layout.length,
+                len2 = shape.layout[0].length;
+            for (var y = 0; y < len1; y++) {
+                for (var x = 0; x < len2; x++) {
+                    if (shape.layout[y][x]) {
+                        if (typeof this.list[oy + y] === 'undefined') {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        },
+
+        /* 添加 已经 “死”的砖块到游戏主面板中*/
+        addBlocksToBoard: function () {
+            var len1 = this.shape.layout.length,
+                len2 = this.shape.layout[0].length,
+                boradX, boradY;
+            for (var y = 0; y < len1; y++) {
+                for (var x = 0; x < len2; x++) {
+                    if (this.shape.layout[y][x]) {
+                        boradX = this.shape.currentX + x;
+                        boradY = this.shape.currentY + y;
+
+                        //堆满，游戏结束
+                        if (false) { }
+
+                        //没有堆满
+                        else {
+                            this.list[boradY][boradX] = this.shape.layout[y][x];
+                        }
+                    }
+                }
+            }
+        },
+
     };
 
 
