@@ -2,6 +2,8 @@
     var cols = 13,
       rows = 16,
       bw = 32;
+      speed=800;
+      interval=null;
 
 
     /*
@@ -58,6 +60,7 @@
     *砖块对象
     */
     function Board() {
+        this.grid;
         this.cols = cols;
         this.rows = rows;
         this.bw = bw;
@@ -73,6 +76,18 @@
             this.drawBgLine();
             this.drawRandomShapeInBoard();
             this.drawRandomShapeInNext();
+            this.initGrid();
+        },
+
+        /*初始化整个游戏主空格*/
+        initGrid:function(){
+            this.list=[];
+            for(var y=0;y<rows;y++){
+                this.list[y]=[];
+                for(var x=0;x<rows;x++) {
+                    this.list[y][x]=0;
+                }
+            }
         },
 
         /*在主要的游戏面板上绘制一个随机的形状*/
@@ -87,7 +102,7 @@
         },
 
         /*
-        *绘制水平线，总条数为13根
+        *绘制水平线，总条数为13，16根
         */
         drawBgLine: function () {
             this.ctx.strokeStyle = 'rgba(40,40,40,.8)';
@@ -107,14 +122,38 @@
                 this.ctx.lineTo(this.w, this.bw * i);
                 this.ctx.stroke();
             }
+            this.grid=this.ctx.getImageData(0,0,this.w,this.h);  //复制画布的信息 方便后面刷新的时候进行粘贴
+        },
+
+        /*
+        *自动下落下落计时器
+        */
+        timeTick:function(){
+            this.shape.currentY++;
+            this.refresh();
+            this.shape.draw(this.ctx);
+        },
+
+        /*
+        *刷新画布，并复制背景线
+        */
+        refresh: function() {
+            this.canvas.clearRect();
+            this.ctx.putImageData(this.grid, 0, 0);  //背景线的粘贴
+            this.drawBlocks();
         },
 
         /*
         *绘制砖块
-        *从基本的图片中读取图片，进行编排
         */
-        drawBlock: function () {
-
+        drawBlocks: function () {
+            for(var y=0;y<this.rows;y++){
+                for(var x=0;x<this.cols;x++){
+                    if(this.list[y][x]){
+                        this.shape.block.draw(this.ctx,x,y,this.list[y][x]);
+                    }
+                }
+            }
         },
 
         /*
@@ -195,10 +234,7 @@
         this.total = 7;
     }
 
-    /**
-    *形状对象
-    *包括7种基本形状 类似忙下数组的 形式，1表示这个矩形中图片，0表示没有
-    **/
+    /**********************形状对象**************************/
     function Shape() {
         this.block = new Block();
         this.layout;
@@ -218,7 +254,7 @@
         },
 
         /*
-        *定义七种基本的形状
+        *定义七种基本的形状 包括7种基本形状 类似数组的 形式，1表示这个矩形中图片，0表示没有
         */
         getBasicLayout: function () {
             this.layouts = [
@@ -299,9 +335,7 @@
     };
 
 
-    /*
-    *canvas 类对象
-    */
+    /***************canvas 类对象***********************/
     function Canvas(id, width, height) {
         this.el = document.getElementById(id);
         this.ctx = this.el.getContext('2d');
@@ -360,6 +394,9 @@
         }
     };
 
+
+
+
     function MyTetris() {
         this.timer = new Timer();
         this.nextShape = new NextShape();
@@ -375,6 +412,9 @@
             var sprite = this.board.shape.block.spriteImg.image;
             sprite.onload = function () {
                 that.board.init();
+                interval=window.setInterval(function(){
+                    that.board.timeTick();
+                },speed);
             };
         },
     };
