@@ -3,8 +3,8 @@
       rows = 16,
       bw = 32;
       speed=800;
-      interval=null;
-
+      interval=null,
+      gameOver = false;
 
     /*
     *时间计时器
@@ -140,6 +140,12 @@
                 this.addBlocksToBoard();  //更改list对应的值，方便绘制“死”砖块
 
                 //消去 填满的行 并相应的加分
+
+                //游戏结束
+                if (gameOver) {
+                    window.MyTetris.endGame();
+                    return false;
+                }
                
                 //得到一个全新的砖块
                 var tempShape = this.shape.init();
@@ -212,14 +218,19 @@
             var len1 = this.shape.layout.length,
                 len2 = this.shape.layout[0].length,
                 boradX, boradY;
-            for (var y = 0; y < len1; y++) {
+            loop1:
+                for (var y = 0; y < len1; y++) {
+                    loop2:
                 for (var x = 0; x < len2; x++) {
                     if (this.shape.layout[y][x]) {
                         boradX = this.shape.currentX + x;
                         boradY = this.shape.currentY + y;
 
-                        //堆满，游戏结束
-                        if (false) { }
+                        //堆满，游戏结束  当前的下一个 的风格的值就是1 说明到了顶部
+                        if (this.list[boradY][boradX]) {
+                            gameOver = true;
+                            break loop1;
+                        }
 
                         //没有堆满
                         else {
@@ -474,6 +485,8 @@
         init: function () {
             this.newGame();
         },
+
+        /*开始新游戏*/
         newGame: function () {
             var that = this;
             var sprite = this.board.shape.block.spriteImg.image;
@@ -483,6 +496,13 @@
                     that.board.timeTick();
                 },speed);
             };
+        },
+
+        /*结束游戏*/
+        endGame: function () {
+            window.clearInterval(interval);  //清除下落计时器
+            window.clearInterval(this.timer.timeInterval);  //清除总时间计时器
+            alert("Game Over");
         },
     };
     return new MyTetris();
