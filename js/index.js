@@ -79,7 +79,7 @@
             this.initGrid();
         },
 
-        /*初始化整个游戏主风格对应的虚拟数据*/
+        /*初始化整个游戏主网格对应的虚拟数据*/
         initGrid:function(){
             this.list=[];
             for(var y=0;y<rows;y++){
@@ -151,6 +151,7 @@
                 this.shape.setDeafaultPos();
 
                 //重新生成一个新的砖块 预览框中
+                this.nextShape = tempShape;
                 this.drawRandomShapeInNext(tempShape);
 
             }
@@ -184,7 +185,7 @@
         *判断砖块是否到底部
         *判断区域的几个语句：
         *1.通过y 方向确定是否到达底部
-        *2.
+        *2. 通过y方向确定，其下部有其他的砖块
         */
         validMove: function (x,y) {
             var shape = this.shape,
@@ -195,7 +196,9 @@
             for (var y = 0; y < len1; y++) {
                 for (var x = 0; x < len2; x++) {
                     if (shape.layout[y][x]) {
-                        if (typeof this.list[oy + y] === 'undefined') {
+                        if (typeof this.list[oy + y] === 'undefined'
+                            || this.list[oy+y][ox+x]
+                            ) {
                             return false;
                         }
                     }
@@ -370,8 +373,8 @@
             var index = Math.floor(Math.random() * this.layouts.length),
                  layout = this.layouts[index];
             this.blockType = this.block.random();
-            for (var y = 0; y < layout.lenght; y++) {
-                for (var x = 0; x < layout[0].lenght; x++) {
+            for (var y = 0; y < layout.length; y++) {
+                for (var x = 0; x < layout[0].length; x++) {
                     //如果相应的数字为1 ，则赋值上 颜色块对应的数值，方便后面的图片加载
                     if (layout[y][x]) {
                         layout[y][x] = this.blockType;
