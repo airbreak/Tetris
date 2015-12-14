@@ -49,7 +49,7 @@
             return num;
         },
 
-        /*信息渲染到画布上*/
+        /*信息渲染到画布上 */
         renderTimerInfo: function () {
             this.canvas.drawText(this.timeFormat(this.originTime));
         },
