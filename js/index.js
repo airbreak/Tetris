@@ -1,8 +1,8 @@
 ﻿var MyTetris = (function () {
     var cols = 13,
       rows = 16,
-      bw = 32;
-      speed=800;
+      bw = 32,
+      speed=800,
       interval=null,
       gameOver = false;
 
@@ -140,6 +140,7 @@
                 this.addBlocksToBoard();  //更改list对应的值，方便绘制“死”砖块
 
                 //消去 填满的行 并相应的加分
+                this.clearLine();
 
                 //游戏结束
                 if (gameOver) {
@@ -191,7 +192,10 @@
         *判断砖块是否到底部
         *判断区域的几个语句：
         *1.通过y 方向确定是否到达底部
-        *2. 通过y方向确定，其下部有其他的砖块
+        *2.通过y方向确定，其下部有无其他的砖块
+        *3.x方向上不能小于 0
+        *4.x方向上不能大于横向最大格数
+        *5.y方向上不能大于纵向最大格数
         */
         validMove: function (x,y) {
             var shape = this.shape,
@@ -204,6 +208,9 @@
                     if (shape.layout[y][x]) {
                         if (typeof this.list[oy + y] === 'undefined'
                             || this.list[oy+y][ox+x]
+                            || ox +x<0
+                            || ox+x>=this.cols
+                            || oy+y>=this.rows
                             ) {
                             return false;
                         }
@@ -226,7 +233,7 @@
                         boradX = this.shape.currentX + x;
                         boradY = this.shape.currentY + y;
 
-                        //堆满，游戏结束  当前的下一个 的风格的值就是1 说明到了顶部
+                        //堆满，游戏结束  当前的下一个 的网格的值就是1 说明到了顶部
                         if (this.list[boradY][boradX]) {
                             gameOver = true;
                             break loop1;
@@ -238,6 +245,42 @@
                         }
                     }
                 }
+            }
+        },
+
+        //变换图像
+        rotate:function(){
+            var newLayout=[];
+            for(var y=0;y<this.shape.layout[0].length;y++){
+                newLayout[y]=[];
+                for(var x=0;x<this.shape.layout.length;x++){
+                    newLayout[y][x]=this.shape.layout[this.shape.layout.length-1-x][y];
+                }
+            }
+            this.shape.layout=newLayout;
+        },
+
+        //消除行
+        clearLine:function(){
+            var line=0;
+            for(var y=this.rows-1;y>=0;y--){
+                var filled=true;
+                for(var x=0;x<this.cols;x++){
+                    if(!this.list[y][x]){
+                        filled=false;
+                        break;
+                    }
+                }
+                if(filled && y){
+                    for(var yy=y;yy>0;yy--){
+                        for(var xx=0;xx<this.cols;xx++){
+                            this.list[yy][xx]=this.list[yy-1][xx]; //将当前行信息改成下一行，实现消行
+                        }
+                    }
+                    line++;
+                    y++;  //因为消了一行所以加一
+                }
+
             }
         },
 
@@ -472,18 +515,70 @@
         }
     };
 
+    /*＊左右按钮控制砖块的方向＊*/
+    function KeyBoard(){
+        var keyCode={
+                37:'left',
+                38:'top',
+                39:'right',
+                40:'down',
+            },
+            that=this;
+        this.eventHandlers=function(){
+            document.addEventListener('keydown',this.keyPressEvent,true);
+        };
+        this.keyPressEvent=function(event){
+            var code=event.keyCode;
+            if(code>=37 && code<=40){
+                that.keypress(keyCode[code]);
+            }
 
+        };
 
+        this.keypress=function(type){
+            var refresh=false;
+            switch (type){
+                case 'left':
+                    if(this.board.validMove(-1,0)){
+                        this.board.shape.currentX--;
+                        refresh=true;
+                    }
+                    break;
+                case 'top'://变换
+                    if(this.board.validMove(0,0)){
+                        this.board.rotate();
+                        refresh=true;
+                    }
+                    break;
+                case 'right':
+                    if(this.board.validMove(1,0)){
+                        this.board.shape.currentX++;
+                        refresh=true;
+                    }
+                    break;
+                case 'down':
+                    break;
+            }
+            //刷新整个面板
+            if(refresh){
+                this.board.refresh();
+                this.board.shape.draw(this.board.ctx);   //y坐标修改
+            }
+        };
+
+    };
 
     function MyTetris() {
         this.timer = new Timer();
         this.nextShape = new NextShape();
         this.board = new Board();
+        KeyBoard.call(this);
         this.init();
     }
     MyTetris.prototype = {
         init: function () {
             this.newGame();
+            this.eventHandlers();
         },
 
         /*开始新游戏*/
