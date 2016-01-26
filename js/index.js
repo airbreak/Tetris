@@ -2,7 +2,7 @@
     var cols = 13,
       rows = 16,
       bw = 32,
-      speed=800,
+      speed=300,
       interval=null,
       gameOver = false;
 
@@ -15,6 +15,7 @@
         this.canvas = new Canvas('timer', this.width, this.height);
         this.originTime = 0;
         this.canvas.drawHead('rgb(147,255,36)', 'Timer');
+
         this.setTimer();
     };
 
@@ -263,6 +264,7 @@
         //消除行
         clearLine:function(){
             var line=0;
+            var lineArr=[];
             for(var y=this.rows-1;y>=0;y--){
                 var filled=true;
                 for(var x=0;x<this.cols;x++){
@@ -272,6 +274,7 @@
                     }
                 }
                 if(filled && y){
+                    lineArr.push(y);
                     for(var yy=y;yy>0;yy--){
                         for(var xx=0;xx<this.cols;xx++){
                             this.list[yy][xx]=this.list[yy-1][xx]; //将当前行信息改成下一行，实现消行
@@ -282,6 +285,19 @@
                 }
 
             }
+            if(lineArr.length>0) {
+                this.clearLineEffect(lineArr);
+            }
+        },
+
+        //消除行 效果样式
+        clearLineEffect:function(lineArr){
+            for(var j=lineArr.length-1;j>=0;j--) {
+                for (var i = 0; i < this.cols; i++) {
+                    this.shape.block.draw(this.ctx, i, lineArr[j], 7);
+                }
+            }
+
         },
 
     };
@@ -312,10 +328,10 @@
             var type = blockType || this.random();
             var s = this.size;
             ctx.drawImage(this.img,
-                s * (type - 1), 0, //开始位置
-                s, s,  //高度和宽度
-                s * x, s * y, //放置的位置
-                s, s //要使用的大小
+                s * (type - 1), 0, //开始剪切位置
+                s, s,  //被剪切图像的高度和宽度
+                s * x, s * y, //在画布上放置图像的位置
+                s, s //要使用的图像的大小
                 );
         }
     };
